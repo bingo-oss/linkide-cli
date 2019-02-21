@@ -1,43 +1,65 @@
 #!/usr/bin/env node
-var utils = require("./utils");
-var yargs = require("yargs");
+const handler = require('./handler');
+const yargs = require('yargs');
 
-yargs.command({
-    command:"source <action>",
-    desc:"源操作,action取值包括:add|update|remove|list",
-    builder:(yargs)=>{
-        yargs.option('name', {
-            alias: 'n',
-            describe: '源名称,执行update|remove操作需要传入该参数'
-        });
+handler.init();
+handler.dependencyCheck();
+
+// 组装命令
+// eslint-disable-next-line no-unused-expressions
+yargs
+  .command({
+    command: 'source <action>',
+    desc: '源操作,action取值包括:add|update|remove|list',
+    builder: yargs => {
+      yargs.option('force', {
+        alias: 'f',
+        describe: '强制删除操作'
+      });
     },
-    handler:(argv)=>{
-        var action = argv.action;
-        var name = argv.name;
-        console.log(action + " "+ name)
+    handler: argv => {
+      const action = argv.action;
+      switch (action) {
+        case 'add':
+          handler.addSource(argv);
+          break;
+        case 'update':
+          handler.updateSource(argv);
+          break;
+        case 'remove':
+          handler.removeSource(argv);
+          break;
+        case 'list':
+          handler.listSource(argv);
+          break;
+        default:
+        // todo
+      }
     }
-})
-.command({
-    command:"template <action>",
-	desc:"模版操作,action取值包括:init|push",
-	builder:(yargs)=>{
-        yargs.option('source', {
-            alias: 's',
-            describe: '源名称,执行push操作需要传入该参数'
-        });
-    },
-    handler:(argv)=>{
-		var action = argv.action;
-		var source = argv.source;
-        console.log(action + " "+ source)
+  })
+  .command({
+    command: 'template <action>',
+    desc: '模版操作,action取值包括:init|push',
+    handler: argv => {
+      const action = argv.action;
+      switch (action) {
+        case 'init':
+          handler.templateInit(argv);
+          break;
+        case 'push':
+          handler.templatePush(argv);
+          break;
+        default:
+        // todo
+      }
     }
-})
-.version()
-.help()
-.alias({
-    "h": "help",
-    "v": "version"
-})
-.strict(true)
-.demandCommand()
-.argv
+  })
+  .version()
+  .help()
+  .alias({
+    'h': 'help',
+    'v': 'version'
+  })
+  .strict(true)
+  .demandCommand()
+  .argv;
